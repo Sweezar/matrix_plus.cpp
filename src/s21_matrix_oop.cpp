@@ -278,7 +278,7 @@ void S21Matrix::MulMatrix(const S21Matrix& other) {
     throw invalid_argument("The count of matrix columns and rows must be greater than zero");
   }
   if (cols_ != other.rows_) {
-    throw invalid_argument("the count of columns of the first matrix is ​​not equal to the count of rows of the second matrix");
+    throw invalid_argument("the count of columns of the first matrix is not equal to the count of rows of the second matrix");
   }
   S21Matrix tmp(rows_, other.cols_);
   for (int i = 0; i < rows_; i++) {
@@ -321,7 +321,7 @@ double S21Matrix::Determinant() {
     throw invalid_argument("The count of matrix columns and rows must be greater than zero");
   }
   if(rows_ != cols_) {
-    throw invalid_argument("The matrix is ​​not square.");
+    throw invalid_argument("The matrix is not square.");
   }
 
   double tmp_result = 0;
@@ -360,7 +360,7 @@ S21Matrix S21Matrix::CalcComplements() {
     throw invalid_argument("The count of matrix columns and rows must be greater than zero");
   }
   if(rows_ != cols_) {
-    throw invalid_argument("The matrix is ​​not square.");
+    throw invalid_argument("The matrix is not square.");
   }
   
   S21Matrix result;
@@ -391,7 +391,7 @@ S21Matrix S21Matrix::InverseMatrix() {
         throw invalid_argument("The count of matrix columns and rows must be greater than zero");
     }
     if (rows_ != cols_) {
-        throw invalid_argument("The matrix is ​​not square.");
+        throw invalid_argument("The matrix is not square.");
     }
     
     double determinant = Determinant();
@@ -471,4 +471,26 @@ void S21Matrix::set_matrix(double** a, int rows, int cols) {
       }
     }
   }
+}
+
+S21Matrix operator*(double a, S21Matrix& matrix) {
+  S21Matrix result = matrix;
+  result.MulNumber(a);
+  return result;
+}
+
+S21Matrix operator*(S21Matrix& matrix, double a) {
+  S21Matrix result = matrix;
+  result.MulNumber(a);
+  return result;
+}
+
+S21Matrix& operator*=(double a, S21Matrix& matrix) {
+  matrix.MulNumber(a);
+  return matrix;
+}
+
+S21Matrix& operator*=(S21Matrix& matrix, double a) {
+  matrix.MulNumber(a);
+  return matrix;
 }

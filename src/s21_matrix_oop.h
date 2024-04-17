@@ -26,7 +26,11 @@ public:
   S21Matrix operator-(const S21Matrix& other);
   S21Matrix& operator-=(const S21Matrix& other);
   S21Matrix operator*(const S21Matrix& other);
+  friend S21Matrix operator*(double a, S21Matrix& matrix);
+  friend S21Matrix operator*(S21Matrix& matrix, double a);
   S21Matrix& operator*=(const S21Matrix& other);
+  friend S21Matrix& operator*=(double a, S21Matrix& matrix);
+  friend S21Matrix& operator*=(S21Matrix& matrix, double a);
   S21Matrix& operator=(const S21Matrix& other);
   bool operator==(const S21Matrix& other);
   double& operator()(int row, int col);
@@ -49,5 +53,10 @@ public:
   void set_matrix(double* a, int size);
   void set_matrix(double** a, int rows, int cols);
 };
+
+S21Matrix operator*(double a, S21Matrix& matrix);
+S21Matrix operator*(S21Matrix& matrix, double a);
+S21Matrix& operator*=(double a, S21Matrix& matrix);
+S21Matrix& operator*=(S21Matrix& matrix, double a);
 
 #endif

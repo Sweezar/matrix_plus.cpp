@@ -11,7 +11,7 @@ int main() {
   double b = matrix2(3,3);
 
   matrix1 += matrix2;
-  matrix2 *= matrix1;
+  matrix2 *= 2;
   S21Matrix matrix3 = matrix1.InverseMatrix();
   matrix1.set_rows(2);
   matrix1.set_cols(2);
