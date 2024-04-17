@@ -8,8 +8,10 @@ class S21Matrix
 private:
   int _rows, _cols;
   double **_matrix;
-  void _S21Matrix_memory_allocate(int rows, int cols, double**& matrix);
+  void _S21Matrix_memory_allocate();
   void _destroy();
+  S21Matrix _get_minor(int row, int col);
+  S21Matrix _get_matrix_of_minors();
 
 public:
   S21Matrix();

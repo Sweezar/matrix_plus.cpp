@@ -1,28 +1,31 @@
 #include "s21_matrix_oop.h"
+#include <cmath> 
 
 using namespace std;
 
-void S21Matrix::_S21Matrix_memory_allocate(int rows, int cols, double**& matrix) {
-  if(rows <= 0 || cols <= 0) {
+/// @brief Выделяет память для матрицы
+void S21Matrix::_S21Matrix_memory_allocate() {
+  if(_rows <= 0 || _cols <= 0) {
     throw invalid_argument("The count of matrix columns and rows must be greater than zero");
   }
-  matrix = new double*[rows]();
-  if(!matrix) {
+  _matrix = new double*[_rows]();
+  if(!_matrix) {
     throw bad_alloc();
   }
 
-  for(int i = 0; i < rows; i++) {
-    matrix[i] = new double[cols]();
-    if(!matrix[i]) {
+  for(int i = 0; i < _rows; i++) {
+    _matrix[i] = new double[_cols]();
+    if(!_matrix[i]) {
       for (int j = 0; j < i; j++) {
-        delete[] matrix[j];
+        delete[] _matrix[j];
       }
-      delete[] matrix;
+      delete[] _matrix;
       throw bad_alloc();
     }
   }
 }
 
+/// @brief освобождение памяти под матрицу
 void S21Matrix::_destroy() {
   for(int i = 0; i < _rows; i++) {
     delete[] _matrix[i];
@@ -30,9 +33,49 @@ void S21Matrix::_destroy() {
   delete[] _matrix;
 }
 
+/// @brief Возвращает минор матрицы
+/// @param row строка для которой вычисляется минор 
+/// @param col столбец для которого вычисляется минор
+/// @return результирующую матрицу
+S21Matrix S21Matrix::_get_minor(int row, int col) {
+  S21Matrix tmp(_rows - 1, _cols - 1);
+  if (_rows > 1) {
+    for (int i = 0; i < _rows; i++) {
+      for (int ii = 0; ii < _cols; ii++) {
+        if (i < row && ii < col) {
+          tmp._matrix[i][ii] = _matrix[i][ii];
+        } else if (i > row && ii < col) {
+          tmp._matrix[i - 1][ii] = _matrix[i][ii];
+        } else if (i < row && ii > col) {
+          tmp._matrix[i][ii - 1] = _matrix[i][ii];
+        } else if (i > row && ii > col) {
+          tmp._matrix[i - 1][ii - 1] = _matrix[i][ii];
+        }
+      }
+    }
+  }
+  return tmp;
+}
+
+/// @brief Получить матрицу миноров
+/// @return матрицу миноров
+S21Matrix S21Matrix::_get_matrix_of_minors() {
+  S21Matrix result(_rows, _cols);
+  S21Matrix minor_matrix;
+
+  for (int i = 0; i < _rows; i++) {
+    for (int ii = 0; ii < _cols; ii++) {
+      minor_matrix = _get_minor(i, ii);
+      result._matrix[i][ii] = minor_matrix.Determinant();
+    }
+  }
+
+  return result;
+}
+
 S21Matrix::S21Matrix() : _rows(3), _cols(3) {
   try {
-    _S21Matrix_memory_allocate(_rows, _cols, _matrix);
+    _S21Matrix_memory_allocate();
   } catch (const bad_alloc& e) {
     cerr << "Memory allocation error";
     exit(1);
@@ -41,7 +84,7 @@ S21Matrix::S21Matrix() : _rows(3), _cols(3) {
 
 S21Matrix::S21Matrix(int rows) : _rows(rows), _cols(rows) {
   try {
-    _S21Matrix_memory_allocate(_rows, _cols, _matrix);
+    _S21Matrix_memory_allocate();
   } catch (const bad_alloc& e) {
     cerr << "Memory allocation error";
     exit(1);
@@ -50,7 +93,7 @@ S21Matrix::S21Matrix(int rows) : _rows(rows), _cols(rows) {
 
 S21Matrix::S21Matrix(int rows, int cols) : _rows(rows), _cols(cols) {
   try {
-    _S21Matrix_memory_allocate(_rows, _cols, _matrix);
+    _S21Matrix_memory_allocate();
   } catch (const bad_alloc& e) {
     cerr << "Memory allocation error";
     exit(1);
@@ -60,14 +103,16 @@ S21Matrix::S21Matrix(int rows, int cols) : _rows(rows), _cols(cols) {
 // copy
 S21Matrix::S21Matrix(const S21Matrix& other) : _rows(other._rows), _cols(other._cols) {
   try {
-    _S21Matrix_memory_allocate(_rows, _cols, _matrix);
+    _S21Matrix_memory_allocate();
   } catch (const bad_alloc& e) {
     cerr << "Memory allocation error";
     exit(1);
   }
 
-  for(int i = 0; i < _rows; i++) {
-    memcpy(_matrix[i], other._matrix[i], _cols * sizeof(double));
+  for (int i = 0; i < _rows; ++i) {
+    for (int j = 0; j < _cols; ++j) {
+        _matrix[i][j] = other._matrix[i][j];
+    }
   }
 }
 
@@ -88,12 +133,13 @@ S21Matrix::~S21Matrix() {
 
 S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
   if(!(EqMatrix(other))) {
-    _destroy();
-
+    if(_matrix != nullptr) {
+      _destroy();
+    }
     _rows = other._rows;
     _cols = other._cols;
     try {
-      _S21Matrix_memory_allocate(_rows, _cols, _matrix);
+      _S21Matrix_memory_allocate();
     } catch (const bad_alloc& e) {
       cerr << "Memory allocation error";
       exit(1);
@@ -120,13 +166,15 @@ bool S21Matrix::EqMatrix(const S21Matrix& other) {
   if(_rows != other._rows || _cols != other._cols) {
     isEqual = 0;
   }
-  for (int i = 0; i < _rows; i++) {
-    for (int ii = 0; ii < _cols; ii++) {
+  if (isEqual) {
+      for (int i = 0; i < _rows; i++) {
+        for (int ii = 0; ii < _cols; ii++) {
       
-      if(_matrix[i][ii] != other._matrix[i][ii]) {
-        isEqual = 0;
+          if(_matrix[i][ii] != other._matrix[i][ii]) {
+            isEqual = 0;
+          }
+        }
       }
-    }
   }
 
   return isEqual ? true : false;
@@ -203,6 +251,122 @@ void S21Matrix::MulMatrix(const S21Matrix& other) {
   }
 
   *this = move(tmp);
+}
+
+S21Matrix S21Matrix::Transpose() {
+  if(_matrix == nullptr) {
+    throw invalid_argument("Matrix missing");
+  }
+  if(_rows <= 0 || _cols <= 0) {
+    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
+  }
+  S21Matrix tmp(*this);
+
+  for (int i = 0; i < _rows; i++) {
+    for (int ii = 0; ii < _cols; ii++) {
+      tmp._matrix[ii][i] = _matrix[i][ii];
+    }
+  }
+
+  return tmp;
+}
+
+/// @brief Вычисление определителя матрицы.
+/// @return определитель матрицы
+double S21Matrix::Determinant() {
+  if(_matrix == nullptr) {
+    throw invalid_argument("Matrix missing");
+  }
+  if(_rows <= 0 || _cols <= 0) {
+    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
+  }
+  if(_rows != _cols) {
+    throw invalid_argument("The matrix is ​​not square.");
+  }
+
+  double tmp_result = 0;
+  double tmp_determenant;
+
+  if (_rows == 1) {
+    tmp_result = this->_matrix[0][0];
+  } else {
+    S21Matrix minor_matrix;
+    for (int i = 0; i < _rows; i++) {
+      minor_matrix = this->_get_minor(i, 0);
+      tmp_determenant = minor_matrix.Determinant();
+
+      if (i % 2) {
+        tmp_result -= this->_matrix[i][0] * tmp_determenant;
+      } else {
+        tmp_result += this->_matrix[i][0] * tmp_determenant;
+      }
+    }
+  }
+
+  return tmp_result;
+}
+
+/// @brief
+/// Вычисление матрицы алгебраических дополнений.
+/// Алгебраическим дополнением элемента матрицы является значение минора
+/// умноженное на - 1 ^ (i + j).
+/// @return
+/// результирующая матрица
+S21Matrix S21Matrix::CalcComplements() {
+  if(_matrix == nullptr) {
+    throw invalid_argument("Matrix missing");
+  }
+  if(_rows <= 0 || _cols <= 0) {
+    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
+  }
+  if(_rows != _cols) {
+    throw invalid_argument("The matrix is ​​not square.");
+  }
+  
+  S21Matrix result;
+  result = _get_matrix_of_minors();
+  
+  for (int i = 0; i < _rows; i++) {
+    for (int ii = 0; ii < _cols; ii++) {
+      if (result._matrix[i][ii] != 0.0) {
+        result._matrix[i][ii] *= pow(-1, i + ii);
+      }
+    }
+  }
+
+  return result;
+}
+
+/// @brief
+/// Обратная матрица .
+/// Матрицу A в степени - 1 называют обратной к квадратной матрице А, если
+/// произведение этих матриц равняется единичной матрице.Обратной матрицы не
+/// существует, если определитель равен 0. 
+/// @return результирующая матрица
+S21Matrix S21Matrix::InverseMatrix() {
+    if (_matrix == nullptr) {
+        throw invalid_argument("Matrix missing");
+    }
+    if (_rows <= 0 || _cols <= 0) {
+        throw invalid_argument("The count of matrix columns and rows must be greater than zero");
+    }
+    if (_rows != _cols) {
+        throw invalid_argument("The matrix is ​​not square.");
+    }
+
+    
+    double determinant = Determinant();
+    S21Matrix complements_matrix;
+    S21Matrix transpose_complements_matrix;
+    if (0 == determinant) {
+        throw invalid_argument("matrix for which calculations cannot be done");
+    } else {
+        complements_matrix = CalcComplements();
+        transpose_complements_matrix = complements_matrix.Transpose();
+        transpose_complements_matrix.MulNumber(1.0 / determinant);
+    }
+
+    return transpose_complements_matrix;
 }
 
 void S21Matrix::fill(double* a, int size) {
