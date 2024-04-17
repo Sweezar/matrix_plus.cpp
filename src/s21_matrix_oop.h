@@ -6,12 +6,12 @@
 class S21Matrix
 {
 private:
-  int _rows, _cols;
-  double **_matrix;
-  void _S21Matrix_memory_allocate();
-  void _destroy();
-  S21Matrix _get_minor(int row, int col);
-  S21Matrix _get_matrix_of_minors();
+  int rows_, cols_;
+  double **matrix_;
+  void S21Matrix_memory_allocate_();
+  void destroy_();
+  S21Matrix get_minor_(int row, int col);
+  S21Matrix get_matrix_of_minors_();
 
 public:
   S21Matrix();
@@ -30,7 +30,6 @@ public:
   S21Matrix& operator=(const S21Matrix& other);
   bool operator==(const S21Matrix& other);
   double& operator()(int row, int col);
-  double& operator()(int row, int col) const;
 
   bool EqMatrix(const S21Matrix& other);
   void SumMatrix(const S21Matrix& other); 
@@ -42,9 +41,13 @@ public:
   double Determinant();
   S21Matrix InverseMatrix();
 
-  void fill(double* a, int size);
   void print_matrix();
-
+  int get_rows();
+  void set_rows(int rows);
+  int get_cols();
+  void set_cols(int cols);
+  void set_matrix(double* a, int size);
+  void set_matrix(double** a, int rows, int cols);
 };
 
 #endif
