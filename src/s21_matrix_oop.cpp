@@ -1,21 +1,23 @@
 #include "s21_matrix_oop.h"
-#include <cmath> 
+
+#include <cmath>
 
 using namespace std;
 
 /// @brief Выделяет память для матрицы
 void S21Matrix::S21Matrix_memory_allocate_() {
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
+  if (rows_ <= 0 || cols_ <= 0) {
+    throw invalid_argument(
+        "The count of matrix columns and rows must be greater than zero");
   }
   matrix_ = new double*[rows_]();
-  if(!matrix_) {
+  if (!matrix_) {
     throw bad_alloc();
   }
 
-  for(int i = 0; i < rows_; i++) {
+  for (int i = 0; i < rows_; i++) {
     matrix_[i] = new double[cols_]();
-    if(!matrix_[i]) {
+    if (!matrix_[i]) {
       for (int j = 0; j < i; j++) {
         delete[] matrix_[j];
       }
@@ -27,14 +29,14 @@ void S21Matrix::S21Matrix_memory_allocate_() {
 
 /// @brief освобождение памяти под матрицу
 void S21Matrix::destroy_() {
-  for(int i = 0; i < rows_; i++) {
+  for (int i = 0; i < rows_; i++) {
     delete[] matrix_[i];
   }
   delete[] matrix_;
 }
 
 /// @brief Возвращает минор матрицы
-/// @param row строка для которой вычисляется минор 
+/// @param row строка для которой вычисляется минор
 /// @param col столбец для которого вычисляется минор
 /// @return результирующую матрицу
 S21Matrix S21Matrix::get_minor_(int row, int col) {
@@ -101,7 +103,8 @@ S21Matrix::S21Matrix(int rows, int cols) : rows_(rows), cols_(cols) {
 }
 
 // copy
-S21Matrix::S21Matrix(const S21Matrix& other) : rows_(other.rows_), cols_(other.cols_) {
+S21Matrix::S21Matrix(const S21Matrix& other)
+    : rows_(other.rows_), cols_(other.cols_) {
   try {
     S21Matrix_memory_allocate_();
   } catch (const bad_alloc& e) {
@@ -111,7 +114,7 @@ S21Matrix::S21Matrix(const S21Matrix& other) : rows_(other.rows_), cols_(other.c
 
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
-        matrix_[i][j] = other.matrix_[i][j];
+      matrix_[i][j] = other.matrix_[i][j];
     }
   }
 }
@@ -127,43 +130,41 @@ S21Matrix::S21Matrix(S21Matrix&& other) {
   other.matrix_ = nullptr;
 }
 
-S21Matrix::~S21Matrix() {
-  destroy_();
-}
+S21Matrix::~S21Matrix() { destroy_(); }
 
 S21Matrix S21Matrix::operator+(const S21Matrix& other) {
-    S21Matrix result = *this;
-    result.SumMatrix(other);
-    return result;
+  S21Matrix result = *this;
+  result.SumMatrix(other);
+  return result;
 }
 
 S21Matrix& S21Matrix::operator+=(const S21Matrix& other) {
-    return *this = *this + other;
+  return *this = *this + other;
 }
 
 S21Matrix S21Matrix::operator-(const S21Matrix& other) {
-    S21Matrix result = *this;
-    result.SubMatrix(other);
-    return result;
+  S21Matrix result = *this;
+  result.SubMatrix(other);
+  return result;
 }
 
 S21Matrix& S21Matrix::operator-=(const S21Matrix& other) {
-    return *this = *this - other;
+  return *this = *this - other;
 }
 
 S21Matrix S21Matrix::operator*(const S21Matrix& other) {
-    S21Matrix result = *this;
-    result.MulMatrix(other);
-    return result;
+  S21Matrix result = *this;
+  result.MulMatrix(other);
+  return result;
 }
 
 S21Matrix& S21Matrix::operator*=(const S21Matrix& other) {
-    return *this = *this * other;
+  return *this = *this * other;
 }
 
 S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
-  if(!(EqMatrix(other))) {
-    if(matrix_ != nullptr) {
+  if (!(EqMatrix(other))) {
+    if (matrix_ != nullptr) {
       destroy_();
     }
     rows_ = other.rows_;
@@ -176,7 +177,7 @@ S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
     }
     for (int i = 0; i < rows_; ++i) {
       for (int j = 0; j < cols_; ++j) {
-          matrix_[i][j] = other.matrix_[i][j];
+        matrix_[i][j] = other.matrix_[i][j];
       }
     }
   }
@@ -185,49 +186,36 @@ S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
 }
 
 bool S21Matrix::operator==(const S21Matrix& other) {
-    return this->EqMatrix(other);
+  return this->EqMatrix(other);
 }
 
 double& S21Matrix::operator()(int row, int col) {
-  if (row > rows_ || col > cols_ || row <= 0 || col <= 0) {
-      throw invalid_argument("invalid argument value");
+  if (row >= rows_ || col >= cols_ || row < 0 || col < 0) {
+    throw invalid_argument("invalid argument value");
   }
-  return matrix_[row - 1][col - 1];
+  return matrix_[row][col];
 }
 
 bool S21Matrix::EqMatrix(const S21Matrix& other) {
-  if(matrix_ == nullptr || other.matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0 || other.rows_ <= 0 || other.cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  int isEqual = 1;
-  if(rows_ != other.rows_ || cols_ != other.cols_) {
-    isEqual = 0;
+  bool isEqual = true;
+  if (rows_ != other.rows_ || cols_ != other.cols_) {
+    isEqual = false;
   }
   if (isEqual) {
-      for (int i = 0; i < rows_; i++) {
-        for (int ii = 0; ii < cols_; ii++) {
-      
-          if(matrix_[i][ii] != other.matrix_[i][ii]) {
-            isEqual = 0;
-          }
+    for (int i = 0; i < rows_; i++) {
+      for (int ii = 0; ii < cols_; ii++) {
+        if (matrix_[i][ii] != other.matrix_[i][ii]) {
+          isEqual = false;
         }
       }
+    }
   }
 
-  return isEqual ? true : false;
+  return isEqual;
 }
 
 void S21Matrix::SumMatrix(const S21Matrix& other) {
-  if(matrix_ == nullptr || other.matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0 || other.rows_ <= 0 || other.cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  if(rows_ != other.rows_ || cols_ != other.cols_) {
+  if (rows_ != other.rows_ || cols_ != other.cols_) {
     throw invalid_argument("The dimensions of the matrices are not equal");
   }
 
@@ -239,13 +227,7 @@ void S21Matrix::SumMatrix(const S21Matrix& other) {
 }
 
 void S21Matrix::SubMatrix(const S21Matrix& other) {
-  if(matrix_ == nullptr || other.matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0 || other.rows_ <= 0 || other.cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  if(rows_ != other.rows_ || cols_ != other.cols_) {
+  if (rows_ != other.rows_ || cols_ != other.cols_) {
     throw invalid_argument("The dimensions of the matrices are not equal");
   }
 
@@ -257,12 +239,6 @@ void S21Matrix::SubMatrix(const S21Matrix& other) {
 }
 
 void S21Matrix::MulNumber(const double num) {
-  if(matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
   for (int i = 0; i < rows_; i++) {
     for (int ii = 0; ii < cols_; ii++) {
       matrix_[i][ii] = matrix_[i][ii] * num;
@@ -271,14 +247,10 @@ void S21Matrix::MulNumber(const double num) {
 }
 
 void S21Matrix::MulMatrix(const S21Matrix& other) {
-  if(matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
   if (cols_ != other.rows_) {
-    throw invalid_argument("the count of columns of the first matrix is not equal to the count of rows of the second matrix");
+    throw invalid_argument(
+        "the count of columns of the first matrix is not equal to the count of "
+        "rows of the second matrix");
   }
   S21Matrix tmp(rows_, other.cols_);
   for (int i = 0; i < rows_; i++) {
@@ -294,13 +266,7 @@ void S21Matrix::MulMatrix(const S21Matrix& other) {
 }
 
 S21Matrix S21Matrix::Transpose() {
-  if(matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  S21Matrix tmp(*this);
+  S21Matrix tmp(cols_, rows_);
 
   for (int i = 0; i < rows_; i++) {
     for (int ii = 0; ii < cols_; ii++) {
@@ -314,13 +280,7 @@ S21Matrix S21Matrix::Transpose() {
 /// @brief Вычисление определителя матрицы.
 /// @return определитель матрицы
 double S21Matrix::Determinant() {
-  if(matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  if(rows_ != cols_) {
+  if (rows_ != cols_) {
     throw invalid_argument("The matrix is not square.");
   }
 
@@ -353,19 +313,13 @@ double S21Matrix::Determinant() {
 /// @return
 /// результирующая матрица
 S21Matrix S21Matrix::CalcComplements() {
-  if(matrix_ == nullptr) {
-    throw invalid_argument("Matrix missing");
-  }
-  if(rows_ <= 0 || cols_ <= 0) {
-    throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-  }
-  if(rows_ != cols_) {
+  if (rows_ != cols_) {
     throw invalid_argument("The matrix is not square.");
   }
-  
+
   S21Matrix result;
   result = get_matrix_of_minors_();
-  
+
   for (int i = 0; i < rows_; i++) {
     for (int ii = 0; ii < cols_; ii++) {
       if (result.matrix_[i][ii] != 0.0) {
@@ -381,31 +335,25 @@ S21Matrix S21Matrix::CalcComplements() {
 /// Обратная матрица .
 /// Матрицу A в степени - 1 называют обратной к квадратной матрице А, если
 /// произведение этих матриц равняется единичной матрице.Обратной матрицы не
-/// существует, если определитель равен 0. 
+/// существует, если определитель равен 0.
 /// @return результирующая матрица
 S21Matrix S21Matrix::InverseMatrix() {
-    if (matrix_ == nullptr) {
-        throw invalid_argument("Matrix missing");
-    }
-    if (rows_ <= 0 || cols_ <= 0) {
-        throw invalid_argument("The count of matrix columns and rows must be greater than zero");
-    }
-    if (rows_ != cols_) {
-        throw invalid_argument("The matrix is not square.");
-    }
-    
-    double determinant = Determinant();
-    S21Matrix complements_matrix;
-    S21Matrix transpose_complements_matrix;
-    if (0 == determinant) {
-        throw invalid_argument("matrix for which calculations cannot be done");
-    } else {
-        complements_matrix = CalcComplements();
-        transpose_complements_matrix = complements_matrix.Transpose();
-        transpose_complements_matrix.MulNumber(1.0 / determinant);
-    }
+  if (rows_ != cols_) {
+    throw invalid_argument("The matrix is not square.");
+  }
 
-    return transpose_complements_matrix;
+  double determinant = Determinant();
+  S21Matrix complements_matrix;
+  S21Matrix transpose_complements_matrix;
+  if (0 == determinant) {
+    throw invalid_argument("matrix for which calculations cannot be done");
+  } else {
+    complements_matrix = CalcComplements();
+    transpose_complements_matrix = complements_matrix.Transpose();
+    transpose_complements_matrix.MulNumber(1.0 / determinant);
+  }
+
+  return transpose_complements_matrix;
 }
 
 void S21Matrix::print_matrix() {
@@ -417,13 +365,12 @@ void S21Matrix::print_matrix() {
   }
 }
 
-int S21Matrix::get_rows() {
-  return rows_;
-}
+int S21Matrix::get_rows() { return rows_; }
 
 void S21Matrix::set_rows(int rows) {
   if (rows <= 0) {
-    throw invalid_argument("The count of matrix rows must be greater than zero");
+    throw invalid_argument(
+        "The count of matrix rows must be greater than zero");
   }
   S21Matrix tmp = *this;
   this->destroy_();
@@ -433,13 +380,12 @@ void S21Matrix::set_rows(int rows) {
   this->set_matrix(tmp.matrix_, tmp.rows_, tmp.cols_);
 }
 
-int S21Matrix::get_cols() {
-  return cols_;
-}
+int S21Matrix::get_cols() { return cols_; }
 
 void S21Matrix::set_cols(int cols) {
   if (cols <= 0) {
-    throw invalid_argument("The count of matrix rows must be greater than zero");
+    throw invalid_argument(
+        "The count of matrix rows must be greater than zero");
   }
   S21Matrix tmp = *this;
   this->destroy_();
@@ -451,9 +397,9 @@ void S21Matrix::set_cols(int cols) {
 
 void S21Matrix::set_matrix(double* a, int size) {
   int index = 0;
-  for(int i = 0; i < rows_; i++) {
-    for(int ii = 0; ii < cols_; ii++) {
-      if(index < size) {
+  for (int i = 0; i < rows_; i++) {
+    for (int ii = 0; ii < cols_; ii++) {
+      if (index < size) {
         matrix_[i][ii] = a[index++];
       }
     }
@@ -461,11 +407,8 @@ void S21Matrix::set_matrix(double* a, int size) {
 }
 
 void S21Matrix::set_matrix(double** a, int rows, int cols) {
-  if (rows <= 0 || cols <= 0) {
-    throw invalid_argument("The count of matrix rows and columns must be greater than zero");
-  }
-  for(int i = 0; i < rows_; i++) {
-    for(int ii = 0; ii < cols_; ii++) {
+  for (int i = 0; i < rows_; i++) {
+    for (int ii = 0; ii < cols_; ii++) {
       if (rows > i && cols > ii) {
         matrix_[i][ii] = a[i][ii];
       }
@@ -483,11 +426,6 @@ S21Matrix operator*(S21Matrix& matrix, double a) {
   S21Matrix result = matrix;
   result.MulNumber(a);
   return result;
-}
-
-S21Matrix& operator*=(double a, S21Matrix& matrix) {
-  matrix.MulNumber(a);
-  return matrix;
 }
 
 S21Matrix& operator*=(S21Matrix& matrix, double a) {

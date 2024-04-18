@@ -3,22 +3,21 @@
 
 #include <iostream>
 
-class S21Matrix
-{
-private:
+class S21Matrix {
+ private:
   int rows_, cols_;
-  double **matrix_;
+  double** matrix_;
   void S21Matrix_memory_allocate_();
   void destroy_();
   S21Matrix get_minor_(int row, int col);
   S21Matrix get_matrix_of_minors_();
 
-public:
+ public:
   S21Matrix();
   S21Matrix(int rows);
   S21Matrix(int rows, int cols);
-  S21Matrix(const S21Matrix& other); // copy
-  S21Matrix(S21Matrix&& other); // move
+  S21Matrix(const S21Matrix& other);  // copy
+  S21Matrix(S21Matrix&& other);       // move
   ~S21Matrix();
 
   S21Matrix operator+(const S21Matrix& other);
@@ -29,14 +28,13 @@ public:
   friend S21Matrix operator*(double a, S21Matrix& matrix);
   friend S21Matrix operator*(S21Matrix& matrix, double a);
   S21Matrix& operator*=(const S21Matrix& other);
-  friend S21Matrix& operator*=(double a, S21Matrix& matrix);
   friend S21Matrix& operator*=(S21Matrix& matrix, double a);
   S21Matrix& operator=(const S21Matrix& other);
   bool operator==(const S21Matrix& other);
   double& operator()(int row, int col);
 
   bool EqMatrix(const S21Matrix& other);
-  void SumMatrix(const S21Matrix& other); 
+  void SumMatrix(const S21Matrix& other);
   void SubMatrix(const S21Matrix& other);
   void MulNumber(const double num);
   void MulMatrix(const S21Matrix& other);
@@ -56,7 +54,6 @@ public:
 
 S21Matrix operator*(double a, S21Matrix& matrix);
 S21Matrix operator*(S21Matrix& matrix, double a);
-S21Matrix& operator*=(double a, S21Matrix& matrix);
 S21Matrix& operator*=(S21Matrix& matrix, double a);
 
 #endif
